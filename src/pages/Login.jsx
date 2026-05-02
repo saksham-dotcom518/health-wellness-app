@@ -32,10 +32,12 @@ const handleSubmit = async (e) => {
 
     const data = await res.json();
 
+So this block becomes:
+
 if (res.ok) {
   localStorage.setItem("vf_user", JSON.stringify(data.user || data));
   toast.success("Welcome back! 👋");
-  navigate("/");
+  window.location.href = "/";
 }else {
       toast.error(data.message || "Login failed");
     }

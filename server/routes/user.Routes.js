@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/user");
 
-
+// SIGNUP
 router.post("/", async (req, res) => {
   try {
     const { email } = req.body;
@@ -15,14 +15,12 @@ router.post("/", async (req, res) => {
     const user = new User(req.body);
     const saved = await user.save();
     res.json(saved);
-
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
-
-
+// GET USERS
 router.get("/", async (req, res) => {
   try {
     const users = await User.find();
@@ -32,8 +30,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-
-
+// LOGIN
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -41,20 +38,24 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-  return res.status(404).json({ message: "User not found" });
-}
+      return res.status(404).json({ message: "User not found" });
+    }
 
-if (String(user.password).trim() !== String(password).trim()) {
-  return res.status(400).json({ message: "Invalid password" });
-}
+    console.log("DB password:", user.password);
+    console.log("Typed password:", password);
+    console.log("Match:", String(user.password).trim() === String(password).trim());
+
+    if (String(user.password).trim() !== String(password).trim()) {
+      return res.status(400).json({ message: "Invalid password" });
+    }
+
     res.json({ message: "Login successful", user });
-
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
-
+// UPDATE PROFILE
 router.put("/update", async (req, res) => {
   try {
     const { email, ...updates } = req.body;
@@ -65,12 +66,14 @@ router.put("/update", async (req, res) => {
       { new: true }
     );
 
-    res.json(user);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
+    res.json(user);
   } catch (err) {
     res.status(500).json(err);
   }
 });
-
 
 module.exports = router;

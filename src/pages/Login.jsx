@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiActivity, FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff } from 'react-icons/fi';
-import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 export default function Login() {
@@ -10,21 +9,43 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPw, setShowPw]   = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login }   = useAuth();
   const navigate    = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!email || !password) { toast.error('Please fill in all fields'); return; }
-    setLoading(true);
-    setTimeout(() => {
-      const result = login(email, password);
-      if (result.success) { toast.success('Welcome back! 👋'); navigate('/'); }
-      else toast.error(result.error);
-      setLoading(false);
-    }, 800);
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
+  if (!email || !password) {
+    toast.error('Please fill in all fields');
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const res = await fetch("https://health-wellness-smhy.onrender.com/api/users/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+
+if (res.ok) {
+  localStorage.setItem("vf_user", JSON.stringify(data.user || data));
+  toast.success("Welcome back! 👋");
+  navigate("/");
+}else {
+      toast.error(data.message || "Login failed");
+    }
+
+  } catch (error) {
+    toast.error("Server error");
+  }
+
+  setLoading(false);
+};
   return (
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center',

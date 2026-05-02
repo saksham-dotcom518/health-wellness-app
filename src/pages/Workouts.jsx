@@ -33,14 +33,40 @@ export default function Workouts() {
 
   const save = d => { setWorkouts(d); localStorage.setItem('vf_workouts', JSON.stringify(d)); };
 
-  const handleAdd = e => {
-    e.preventDefault();
-    if (!form.duration || !form.calories) { toast.error('Fill in duration and calories'); return; }
-    save([{ id:Date.now(), ...form, duration:+form.duration, calories:+form.calories, date:new Date().toISOString().split('T')[0] }, ...workouts]);
-    setForm({ type:'Running', duration:'', calories:'', notes:'' });
-    setShowForm(false);
-    toast.success('Workout added! 💪');
+const handleAdd = async (e) => {
+  e.preventDefault();
+
+  if (!form.duration || !form.calories) {
+    toast.error('Fill in duration and calories');
+    return;
+  }
+
+  const newWorkout = {
+    id: Date.now(),
+    ...form,
+    duration: +form.duration,
+    calories: +form.calories,
+    date: new Date().toISOString().split('T')[0]
   };
+
+  save([newWorkout, ...workouts]);
+
+  try {
+    await fetch("https://health-wellness-smhy.onrender.com/api/workouts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(newWorkout)
+    });
+  } catch (err) {
+    console.log("Workout backend not connected yet");
+  }
+
+  setForm({ type:'Running', duration:'', calories:'', notes:'' });
+  setShowForm(false);
+  toast.success('Workout added! 💪');
+};
 
   const handleDelete = id => { save(workouts.filter(w => w.id !== id)); toast.success('Deleted'); };
 

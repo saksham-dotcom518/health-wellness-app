@@ -41,8 +41,22 @@ export default function HealthMetrics() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
 
-  const save = d => { setMetrics(d); localStorage.setItem('vf_metrics', JSON.stringify(d)); };
+ const save = async (d) => {
+  setMetrics(d);
+  localStorage.setItem('vf_metrics', JSON.stringify(d));
 
+  try {
+    await fetch("https://health-wellness-smhy.onrender.com/api/metrics", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(d)
+    });
+  } catch (err) {
+    console.log("Metrics backend not connected yet");
+  }
+};
   const handleAdd = e => {
     e.preventDefault();
     if (!form.date) { toast.error('Please enter a date'); return; }

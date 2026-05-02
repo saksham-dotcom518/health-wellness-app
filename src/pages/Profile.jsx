@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiUser, FiMail, FiCalendar, FiSave, FiEdit2 } from 'react-icons/fi';
-import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const card = {
@@ -11,7 +10,9 @@ const card = {
 };
 
 export default function Profile() {
-  const { user, updateProfile } = useAuth();
+  const [user, setUser] = useState(() => {
+  return JSON.parse(localStorage.getItem("vf_user")) || {};
+});
   const [form, setForm] = useState({
     name:   user?.name   || '',
     email:  user?.email  || '',
@@ -30,12 +31,43 @@ export default function Profile() {
     });
   }, [user]);
 
-  const handleSave = e => {
-    e.preventDefault();
-    if (!form.name.trim()) { toast.error('Name cannot be empty'); return; }
-    updateProfile({ name:form.name.trim(), email:form.email, height:+form.height, weight:+form.weight, age:+form.age });
-    toast.success('Profile updated! ✅');
-  };
+const handleSave = async (e) => {
+  e.preventDefault();
+
+  if (!form.name.trim()) {
+    toast.error('Name cannot be empty');
+    return;
+  }
+
+  try {
+    const res = await fetch("https://health-wellness-smhy.onrender.com/api/users/update", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email: form.email,
+        name: form.name,
+        height: form.height,
+        weight: form.weight,
+        age: form.age
+      })
+    });
+
+    const data = await res.json();
+
+   if (res.ok) {
+  localStorage.setItem("vf_user", JSON.stringify(data));
+  setUser(data);
+  toast.success("Profile updated! ✅");
+}else {
+      toast.error(data.message || "Update failed");
+    }
+
+  } catch (error) {
+    toast.error("Server error");
+  }
+};
 
   const workoutCount = (() => { try { return JSON.parse(localStorage.getItem('vf_workouts')||'[]').length; } catch { return 0; } })();
   const goalsAchieved = (() => { try { return JSON.parse(localStorage.getItem('vf_goals')||'[]').filter(x=>x.completed).length; } catch { return 0; } })();

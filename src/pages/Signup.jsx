@@ -2,31 +2,66 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiActivity, FiMail, FiLock, FiUser, FiArrowRight, FiEye, FiEyeOff } from 'react-icons/fi';
-import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 export default function Signup() {
   const [form, setForm]   = useState({ name: '', email: '', password: '', confirm: '' });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signup }  = useAuth();
   const navigate    = useNavigate();
   const set = f => e => setForm(p => ({ ...p, [f]: e.target.value }));
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!form.name || !form.email || !form.password || !form.confirm) { toast.error('Please fill in all fields'); return; }
-    if (form.password !== form.confirm) { toast.error('Passwords do not match'); return; }
-    if (form.password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
-    setLoading(true);
-    setTimeout(() => {
-      const result = signup(form.name, form.email, form.password);
-      if (result.success) { toast.success('Welcome to VitalFlow! 🎉'); navigate('/'); }
-      else toast.error(result.error);
-      setLoading(false);
-    }, 800);
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
+  if (!form.name || !form.email || !form.password || !form.confirm) {
+    toast.error('Please fill in all fields');
+    return;
+  }
+
+  if (form.password !== form.confirm) {
+    toast.error('Passwords do not match');
+    return;
+  }
+
+  if (form.password.length < 6) {
+    toast.error('Password must be at least 6 characters');
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const res = await fetch("https://health-wellness-smhy.onrender.com/api/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        height: 170,
+        weight: 70,
+        age: 25
+      })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      toast.success("Account created! 🎉");
+      navigate("/login");
+    } else {
+      toast.error(data.message || "Signup failed");
+    }
+
+  } catch (error) {
+    toast.error("Server error");
+  }
+
+  setLoading(false);
+};
   const inputStyle = (pl = 42) => ({ paddingLeft: pl });
 
   return (

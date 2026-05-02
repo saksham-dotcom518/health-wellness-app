@@ -44,7 +44,7 @@ router.post("/login", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (user.password !== password) {
+    if (String(user.password).trim() !== String(password).trim()) {
       return res.status(400).json({ message: "Invalid password" });
     }
 

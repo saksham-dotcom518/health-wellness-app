@@ -41,13 +41,12 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+  return res.status(404).json({ message: "User not found" });
+}
 
-    if (String(user.password).trim() !== String(password).trim()) {
-      return res.status(400).json({ message: "Invalid password" });
-    }
-
+if (String(user.password).trim() !== String(password).trim()) {
+  return res.status(400).json({ message: "Invalid password" });
+}
     res.json({ message: "Login successful", user });
 
   } catch (err) {

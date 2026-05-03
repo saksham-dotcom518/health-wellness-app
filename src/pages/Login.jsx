@@ -38,7 +38,7 @@ export default function Login() {
         const loggedUser = data.user || data;
         login(loggedUser);
         toast.success("Welcome back! 👋");
-        window.location.href = "/";
+        window.location.href = "/health-wellness-app/";
       } else {
         toast.error(data.message || "Login failed");
       }
